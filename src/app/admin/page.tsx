@@ -1,9 +1,9 @@
-import AdminLayout from "@/layout/AdminLayout";
+import AdminLayout from "@/layout/adminLayout";
 
-export default function adminPage() {
+export default function Home() {
   return (
     <>
-      <AdminLayout>hello banana</AdminLayout>
+      <AdminLayout>banana</AdminLayout>
     </>
   );
 }

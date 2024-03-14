@@ -1,5 +1,5 @@
-import SideBar from "./SideBar";
-import TopBar from "./TopBar";
+import SideBar from "./sideBar";
+import TopBar from "./topBar";
 export default function AdminLayout(props: LayoutProps) {
   return (
     <div>

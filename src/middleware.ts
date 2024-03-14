@@ -6,7 +6,7 @@ export async function middleware(request: NextRequest) {
   const isLoggedIn = await db.isAuthenticated(request.cookies as any);
   if (
     request.nextUrl.pathname &&
-    request.nextUrl.pathname.startsWith("/login")
+    request.nextUrl.pathname.startsWith("/admin/login")
   ) {
     if (isLoggedIn) {
       return NextResponse.redirect(new URL("/admin", request.url));
@@ -15,7 +15,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (!isLoggedIn) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/admin/login", request.url));
   }
 
   return NextResponse.next();
