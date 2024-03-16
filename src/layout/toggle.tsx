@@ -22,20 +22,40 @@ export default function Toggle() {
   }, [state]);
 
   return (
-    <Menu as="div" className="relative inline-block text-left">
-      <div>
+    <Menu as="div" className="relative inline-block text-left mx-2">
+      <div className="flex items-center">
+        {" "}
         <Menu.Button
           type="button"
-          className="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
+          className="flex text-xs rounded-md focus:ring-gray-300 gap-3 m-auto"
           aria-expanded="false"
           data-dropdown-toggle="dropdown-user"
         >
           <span className="sr-only">Open user menu</span>
           <img
-            className="w-8 h-8 rounded-full"
+            className="w-9 h-9 rounded-md"
             src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
             alt="user photo"
           />
+          <div className="flex flex-col font-semibold text-start">
+            <div>Hussein</div>
+            <div className="text-xs text-light-grey">Admin</div>
+          </div>
+
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-4 h-4"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="m19.5 8.25-7.5 7.5-7.5-7.5"
+            />
+          </svg>
         </Menu.Button>
       </div>
 

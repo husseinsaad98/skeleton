@@ -4,6 +4,8 @@ import db from "./db";
 export async function middleware(request: NextRequest) {
   console.log(`[middleware] ${request.method} ${request.url}`);
   const isLoggedIn = await db.isAuthenticated(request.cookies as any);
+
+  if (!request.nextUrl.pathname.startsWith("/admin")) return;
   if (
     request.nextUrl.pathname &&
     request.nextUrl.pathname.startsWith("/admin/login")

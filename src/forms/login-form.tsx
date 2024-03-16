@@ -1,9 +1,15 @@
 "use client";
 import { authenticateUser } from "@/actions/accountActions";
+import FormInput from "@/components/utils/formInput";
 import SubmitButton from "@/components/utils/SubmitButton";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useFormState } from "react-dom";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "react-hot-toast";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { LoginFields } from "@/models/account";
+import { AuthenticateSchema } from "@/schemas/accountSchema";
 
 export function LoginForm() {
   const router = useRouter();
@@ -19,70 +25,48 @@ export function LoginForm() {
 
   useEffect(() => {
     if (state.isSuccess) router.push("/admin");
+    else if (state.message) toast.error(state.message);
   }, [state]);
 
-  const handleFormSubmit = (formData: FormData) => {
-    formAction(formData);
+  const processForm: SubmitHandler<LoginFields> = (data) => {
+    formAction(data);
   };
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFields>({
+    resolver: zodResolver(AuthenticateSchema),
+  });
 
   return (
     <>
       <form
+        method="post"
+        onSubmit={handleSubmit(processForm)}
         className="space-y-6"
-        action={(formData) => {
-          handleFormSubmit(formData);
-        }}
       >
-        <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium leading-6 text-gray-900"
-          >
-            Email address
-          </label>
-          <div className="mt-2">
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-            />
-          </div>
-        </div>
+        <FormInput
+          name="email"
+          type={"text"}
+          label="Email address"
+          required={true}
+          defaultValue={state.fieldValues.email}
+          register={register("email")}
+          errorMessage={errors.email?.message}
+        />
 
-        <div>
-          <div className="flex items-center justify-between">
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium leading-6 text-gray-900"
-            >
-              Password
-            </label>
-            <div className="text-sm">
-              <a
-                href="#"
-                className="font-semibold text-indigo-600 hover:text-indigo-500"
-              >
-                Forgot password?
-              </a>
-            </div>
-          </div>
-          <div className="mt-2">
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-            />
-          </div>
-        </div>
-        <p aria-live="polite" className="sr-only" role="status">
-          {state?.message}
-        </p>
+        <FormInput
+          name="password"
+          label="Password"
+          type={"password"}
+          required={true}
+          defaultValue={state.fieldValues.password}
+          register={register("password")}
+          errorMessage={errors.password?.message}
+        />
+
         <div>
           <SubmitButton text="Sign in" />
         </div>

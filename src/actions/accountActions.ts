@@ -1,36 +1,27 @@
 "use server";
 
 import db from "@/db";
+import { AuthenticateSchema } from "@/schemas/accountSchema";
+import { LoginFields } from "@/models/account";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { z, ZodError } from "zod";
 import { FormActionResult } from "./formActionResult";
 
-interface Fields {
-  email: string;
-  password: string;
-}
+type Inputs = z.infer<typeof AuthenticateSchema>;
+
 export async function authenticateUser(
   prevState: {
     message: string;
     isSuccess: boolean;
-    errors: Record<keyof Fields, string> | undefined;
-    fieldValues: Fields;
+    errors: Record<keyof LoginFields, string> | undefined;
+    fieldValues: LoginFields;
   },
-  formData: FormData
+  formData: Inputs
 ) {
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
-  const schema = z.object({
-    email: z.string().min(1).email(),
-    password: z.string().min(8),
-  });
-
+  const { email, password } = formData;
   try {
-    schema.parse({
-      email,
-      password,
-    });
+    AuthenticateSchema.parse(formData);
     try {
       const result = await db.authenticate(email, password);
       const { record, token } = result;
@@ -48,7 +39,7 @@ export async function authenticateUser(
       };
     } catch (err: any) {
       return {
-        message: err.response.message,
+        message: "Wrong email or password",
         isSuccess: false,
         errors: undefined,
         fieldValues: {
@@ -61,7 +52,9 @@ export async function authenticateUser(
     const zodError = error as ZodError;
     const errorMap = zodError.flatten().fieldErrors;
     return {
-      message: "Validation error",
+      message: `Validation error ${errorMap["email"]?.[0] ?? ""} ${
+        errorMap["password"]?.[0] ?? ""
+      }`,
       isSuccess: false,
       errors: {
         email: errorMap["email"]?.[0] ?? "",
