@@ -1,32 +1,31 @@
 "use server";
 
-import db from "@/db";
 import { AuthenticateSchema } from "@/schemas/accountSchema";
 import { LoginFields } from "@/models/account";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import app from "@/db";
 import { z, ZodError } from "zod";
 import { FormActionResult } from "./formActionResult";
+import { ActionResult } from "next/dist/server/app-render/types";
 
 type Inputs = z.infer<typeof AuthenticateSchema>;
 
 export async function authenticateUser(
-  prevState: {
-    message: string;
-    isSuccess: boolean;
-    errors: Record<keyof LoginFields, string> | undefined;
-    fieldValues: LoginFields;
-  },
+  prevState: FormActionResult<LoginFields>,
   formData: Inputs
 ) {
   const { email, password } = formData;
   try {
     AuthenticateSchema.parse(formData);
     try {
-      const result = await db.authenticate(email, password);
+      const result = await app.usersCollection.authenticate(email, password);
       const { record, token } = result;
       record.token = token;
-      cookies().set("pb_auth", db.client.authStore.exportToCookie());
+      cookies().set(
+        "pb_auth",
+        app.usersCollection.client.authStore.exportToCookie()
+      );
       revalidatePath("/admin/login");
       return {
         message: `Success`,
@@ -68,7 +67,22 @@ export async function authenticateUser(
   }
 }
 
-export async function signOut(): Promise<FormActionResult> {
+export async function getListUsers(prevState: ActionResult) {
+  try {
+    const result = await app.usersCollection.getUsers();
+    return {
+      message: `Success`,
+      isSuccess: true,
+    };
+  } catch (err: any) {
+    return {
+      message: "",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function signOut(): Promise<ActionResult> {
   try {
     cookies().delete("pb_auth");
 

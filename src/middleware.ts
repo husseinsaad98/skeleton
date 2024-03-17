@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "./db";
+import app from "./db";
 
 export async function middleware(request: NextRequest) {
   console.log(`[middleware] ${request.method} ${request.url}`);
-  const isLoggedIn = await db.isAuthenticated(request.cookies as any);
+  const isLoggedIn = await app.usersCollection.isAuthenticated(
+    request.cookies as any
+  );
 
   if (!request.nextUrl.pathname.startsWith("/admin")) return;
   if (

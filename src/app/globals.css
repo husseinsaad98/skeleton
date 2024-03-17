@@ -24,3 +24,8 @@ a:hover svg {
 .border-bottom {
   border-bottom: 1px solid #dbdade !important;
 }
+
+a.disabled {
+  pointer-events: none;
+  cursor: default;
+}

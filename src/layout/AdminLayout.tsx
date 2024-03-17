@@ -9,7 +9,7 @@ export default function AdminLayout(props: LayoutProps) {
     <div>
       <TopBar open={open} setOpen={setOpen} />
       <SideBar open={open} />
-      <div className="p-4 sm:ml-64 bg-sky-blue h-screen">
+      <div className="p-4 sm:ml-64 bg-sky-blue h-full min-h-screen ">
         <div className="p-4 mt-14"> {props.children}</div>
       </div>
     </div>

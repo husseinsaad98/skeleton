@@ -1,81 +1,82 @@
 "use Client";
-import { useContext, useState } from "react";
-import { FieldConfig } from "./grid";
+import { useState } from "react";
+import { FieldConfig } from "./gridModels";
 import { useContextStore } from "./gridContext";
 
 export default function Column({ column }: { column: FieldConfig }) {
   const [sortType, setSortType] = useState<"asc" | "desc" | "none">("none");
-  let { tableData, updateState } = useContextStore();
+  let { triggerFilter, filteringParams } = useContextStore();
+
   const getNextSortType = (
     currentSortType: "asc" | "desc" | "none"
   ): "asc" | "desc" | "none" => {
     switch (currentSortType) {
       case "asc":
         return "desc";
-      case "desc":
-        return "none";
-      case "none":
-        return "asc";
       default:
-        return "none";
+        return "asc";
     }
   };
 
-  const sortByString = (sortBy: "asc" | "desc" | "none") => {
-    return tableData.sort((a, b) => {
-      if (column.type === "action") return;
-
-      const firstValue =
-        column.type === "object"
-          ? a[column.field]["value"].toUpperCase()
-          : a[column.field].toUpperCase();
-      const secondValue =
-        column.type === "object"
-          ? b[column.field]["value"].toUpperCase()
-          : b[column.field].toUpperCase();
-
-      if (firstValue < secondValue) {
-        return sortBy === "asc" ? -1 : 1;
-      }
-      if (firstValue > secondValue) {
-        return sortBy === "asc" ? 1 : -1;
-      }
-      return 0;
-    });
-  };
-  function sortByNumber(sortBy: "asc" | "desc" | "none"): any[] {
-    if (sortBy === "asc")
-      return tableData
-        .slice()
-        .sort((a, b) => a[column.field] - b[column.field]);
-    else
-      return tableData
-        .slice()
-        .sort((a, b) => b[column.field] - a[column.field]);
-  }
   const handleSorting = () => {
     if (column.type === "action") return;
 
     const nextSortType = getNextSortType(sortType);
     setSortType(nextSortType);
 
-    let tempData: any[] = [];
+    filteringParams.sorting = {
+      field: column.field,
+      sortType: nextSortType,
+      type: column.type,
+    };
 
-    if (column.type === "string" || column.type === "object")
-      tempData = sortByString(nextSortType);
-    if (column.type === "number") tempData = sortByNumber(nextSortType);
-
-    updateState(tempData);
+    triggerFilter(filteringParams);
   };
 
   return (
     <th
-      width="(100/x)%"
-      className="border-bottom text-start px-5 py-3 text-light-grey font-medium text-sm uppercase cursor-pointer"
+      className={`border-bottom text-start px-5 py-3 text-light-grey font-medium text-sm uppercase  ${
+        column.type !== "action" && "cursor-pointer"
+      }`}
       key={column.field}
       onClick={handleSorting}
     >
-      {column.headerName}
+      <div className="flex justify-between">
+        {column.headerName}
+        <div
+          className={`flex flex-col ${column.type === "action" && "hidden"}`}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-2 h-2"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="m4.5 15.75 7.5-7.5 7.5 7.5"
+            />
+          </svg>
+
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-2 h-3"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="m19.5 8.25-7.5 7.5-7.5-7.5"
+            />
+          </svg>
+        </div>
+      </div>
     </th>
   );
 }
