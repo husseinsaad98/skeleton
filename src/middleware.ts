@@ -3,10 +3,8 @@ import app from "./db";
 
 export async function middleware(request: NextRequest) {
   console.log(`[middleware] ${request.method} ${request.url}`);
-  const isLoggedIn = await app.usersCollection.isAuthenticated(
-    request.cookies as any
-  );
-
+  const isLoggedIn = await app.usersCollection.isAuthenticated();
+  console.log(isLoggedIn);
   if (!request.nextUrl.pathname.startsWith("/admin")) return;
   if (
     request.nextUrl.pathname &&

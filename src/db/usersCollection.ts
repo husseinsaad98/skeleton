@@ -1,27 +1,32 @@
 import PocketBase from "pocketbase";
-import { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
-
+import { cookies } from "next/headers";
+import { Roles } from "@/enums";
+import { User } from "@/models/account";
 export const POCKET_BASE_URL = "http://127.0.0.1:8090";
 
 export class UsersCollection {
   client: PocketBase;
 
   constructor(client: PocketBase) {
-    this.client = client;
+    const POCKET_BASE_URL = "http://127.0.0.1:8090";
+    this.client = new PocketBase(POCKET_BASE_URL);
   }
-  async getUsers() {
+  async getUsers(): Promise<User[]> {
+    await this.getUser();
     const result = await this.client.collection("users").getList();
-    return result;
+    return result.items as User[];
   }
 
   async authenticate(email: string, password: string) {
     const result = await this.client
       .collection("users")
       .authWithPassword(email, password);
-    console.log("authenticate result:", result);
-    if (!result?.token) {
+
+    if (!result?.token || result.record.role !== Roles.admin) {
       throw new Error("Invalid email or password");
     }
+    console.log(result.token);
+    this.client.authStore.save(result.token, result.record.model);
     return result;
   }
 
@@ -37,22 +42,24 @@ export class UsersCollection {
     } catch (err) {}
   }
 
-  async isAuthenticated(cookieStore: ReadonlyRequestCookies) {
+  async isAuthenticated() {
+    const cookieStore = cookies();
     const cookie = cookieStore.get("pb_auth");
     if (!cookie) {
       return false;
     }
 
     this.client.authStore.loadFromCookie(cookie?.value || "");
+    console.log(this.client.authStore);
     return this.client.authStore.isValid || false;
   }
 
-  async getUser(cookieStore: ReadonlyRequestCookies) {
+  async getUser() {
+    const cookieStore = cookies();
     const cookie = cookieStore.get("pb_auth");
     if (!cookie) {
       return false;
     }
-
     this.client.authStore.loadFromCookie(cookie?.value || "");
     return this.client.authStore.model;
   }
